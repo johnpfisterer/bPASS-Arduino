@@ -108,11 +108,10 @@ void m_status_check_handle()
 { 
      uint8_t buf[5];
       bar = (uint32_t)(bmp.readPressure());
+      bar = (uint16_t)(bar/1000);
       buf[0] = 0x0A;
-      buf[1] = (bar>>24);
-      buf[2] = (bar>>16);
-      buf[3] = (bar>>8);
-      buf[4] = (bar);
+      buf[1] = (bar>>8);
+      buf[2] = (bar);
       ble.updateCharacteristicValue(characteristic2.getValueAttribute().getHandle(), buf, 5);
 
    uint8_t tmp[5];
