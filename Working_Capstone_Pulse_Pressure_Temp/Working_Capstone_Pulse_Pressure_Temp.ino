@@ -1,6 +1,7 @@
 
 #include <Wire.h>
 #include <Adafruit_BMP085.h>
+
 //  Variables
 int ANALOG_IN_PIN = 4;                 // Pulse Sensor purple wire connected to analog pin 0
 int DIGITAL_OUT_PIN = 0;
@@ -74,53 +75,24 @@ void writtenHandle(const GattWriteCallbackParams *Handler)
 
   if (Handler->handle == characteristic1.getValueAttribute().getHandle()) {
     ble.readCharacteristicValue(characteristic1.getValueAttribute().getHandle(), buf, &bytesRead);
-    Serial1.print("bytesRead: ");
-    Serial1.println(bytesRead, HEX);
-    for (byte index = 0; index < bytesRead; index++) {
-      Serial1.write(buf[index]);
-    }
-    Serial1.println("");
-//    //Process the data
-//    if (buf[0] == 0x01)  // Command is to control digital out pin
-//    {
-//      if (buf[1] == 0x01)
-//        digitalWrite(DIGITAL_OUT_PIN, HIGH);
-//      else
-//        digitalWrite(DIGITAL_OUT_PIN, LOW);
-//    }
-//    else if (buf[0] == 0xA0) // Command is to enable analog in reading
-//    {
-//      if (buf[1] == 0x01)
-//        analog_enabled = true;
-//      else
-//        analog_enabled = false;
-//    }
-//    else if (buf[0] == 0x04)
-//    {
-//      analog_enabled = false;
-//      digitalWrite(DIGITAL_OUT_PIN, LOW);
-//    }
-
   }
 }
 
 void m_status_check_handle()
 { 
-     uint8_t buf[5];
-      bar = (uint32_t)(bmp.readPressure());
-      bar = (uint16_t)(bar/1000);
+     uint8_t buf[3];
+      bar = (uint32_t)(bmp.readPressure())/1000;
       buf[0] = 0x0A;
       buf[1] = (bar>>8);
       buf[2] = (bar);
-      ble.updateCharacteristicValue(characteristic2.getValueAttribute().getHandle(), buf, 5);
+      ble.updateCharacteristicValue(characteristic2.getValueAttribute().getHandle(), buf, 3);
 
    uint8_t tmp[5];
       hot = (uint32_t)(bmp.readTemperature());
       tmp[0] = 0x0B;
       tmp[1] = (hot>>8);
       tmp[2] = (hot);
-      ble.updateCharacteristicValue(characteristic2.getValueAttribute().getHandle(), tmp, 3);
-  
+      ble.updateCharacteristicValue(characteristic2.getValueAttribute().getHandle(), tmp, 3); 
 }
 
 // THIS IS THE Ticker INTERRUPT SERVICE ROUTINE.
@@ -247,31 +219,14 @@ void loop(){
     digitalWrite (DIGITAL_OUT_PIN, HIGH);
     delay (200);
     digitalWrite(DIGITAL_OUT_PIN, LOW);
-    }       
-uint8_t buf[2];
+    }    
+       
+uint8_t buf[3];
     buf[0] = (0x0C); // set flag for incoming data
-    //buf[1] = (0x00); //only 1 8 bit number going out, so first buffer is 0
-    buf[1] = ((uint8_t) BPM); // cast BPM as unsigned 8 bit int
-    ble.updateCharacteristicValue(characteristic2.getValueAttribute().getHandle(), buf, 2);
+    buf[1] = (0x00); //only 1 8 bit number going out, so first buffer is 0
+    buf[2] = ((uint8_t) BPM); // cast BPM as unsigned 8 bit int
+    ble.updateCharacteristicValue(characteristic2.getValueAttribute().getHandle(), buf, 3);
 
-uint8_t buff[3];
-
-  uint16_t value = analogRead(ANALOG_IN_PIN);
-  buff[0] = (0x0B); // why is this B in HEX
-  buff[1] = (value >> 8);
-  buff[2] = (value);
-  //ble.updateCharacteristicValue(characteristic2.getValueAttribute().getHandle(), buff, 3);
-
-uint8_t test [3];
-
-  uint16_t value1 = analogRead(ANALOG_IN_PIN1);
-  test[0] = (0x0C); // why is this B in HEX
-  test[1] = (value1 >> 8);
-  test[2] = (value1);
-  //ble.updateCharacteristicValue(characteristic2.getValueAttribute().getHandle(), test, 3);
-
-
-//Add ble.update
         QS = false;                      // reset the Quantified Self flag for next time
 
 
